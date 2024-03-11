@@ -1,0 +1,17 @@
+<h1 style="width: 70vw"></h1>
+<div class="container">
+  <input
+    type="text"
+    placeholder="Enter Screen title"
+    class="input-field"
+    [(ngModel)]="ScreenTitleInput"
+  />
+  <button class="button" (click)="onSubmit()">Save Screen</button>
+</div>
+<form-builder [form]="form" [options]="option" (change)="onChange($event)"></form-builder>
+
+<hr />
+<h3 class="text-center text-muted">As JSON Schema</h3>
+<div class="well jsonviewer" style="margin-left: 45px">
+  <pre id="json"><code class="language-json" #json></code></pre>
+</div>

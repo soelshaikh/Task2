@@ -1,0 +1,40 @@
+.container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px; /* Add some space between the input/button and the form-builder */
+}
+
+.input-field {
+  flex: 1;
+  margin-right: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.well {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 20px;
+}
+
+pre {
+  white-space: pre-wrap; /* Allows text to wrap */
+}

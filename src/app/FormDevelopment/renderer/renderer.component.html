@@ -1,0 +1,55 @@
+<div class="container renderScreen">
+  <div class="text-center header">
+    <h1>Form Renderer</h1>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div class="form-group">
+        <label class="form-label">Select Form:</label>
+        <select
+          class="form-control form-select-lg mb-3"
+          name="FormTitle"
+          (change)="renderTemplate($event)"
+        >
+          <option value="-1" selected>select template</option>
+          <option *ngFor="let form of formTemplates; let i = index" [value]="i">
+            {{ form.title }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <hr />
+  <div class="row">
+    <div class="col">
+      <div id="formio"></div>
+    </div>
+
+    <div class="col jsonScreen">
+      <ng-container
+        *ngIf="isTemplateSelected; then selectedJsonRef; else emptyJsonRef"
+      ></ng-container>
+
+      <ng-template #emptyJsonRef>
+        <div>JSON not available!</div>
+      </ng-template>
+
+      <ng-template #selectedJsonRef>
+        <div>
+          <div class="text-center">
+            <h4>{{ isDataSubmited ? "Data JSON" : "Template JSON" }}</h4>
+          </div>
+          <div class="input-group mb-3 mt-3">
+            <pre>
+                            {{
+                (isDataSubmited ? submitedTemplate : selectedTemplate) | json
+              }}
+                        </pre
+            >
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
