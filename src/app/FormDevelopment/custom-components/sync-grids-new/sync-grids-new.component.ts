@@ -19,6 +19,7 @@ import {
 } from '@syncfusion/ej2-angular-grids';
 import { PageSettingsModel } from '@syncfusion/ej2-angular-grids';
 import { HttpClient } from '@angular/common/http';
+import { FormioEvent } from '../custom-lib/elements.common';
 
 @Component({
   selector: 'sync-grid-new',
@@ -34,6 +35,10 @@ export class SyncGridsComponent implements AfterViewInit {
   public pageSettings?: PageSettingsModel;
   public url = 'https://dummyjson.com/products';
   @ViewChild('grid', { static: true }) grid: GridComponent;
+  @Input() value: object;
+  @Output() valueChange = new EventEmitter<object>();
+  @Output() FormioEvent = new EventEmitter<FormioEvent>();
+  @Input() disabled!: boolean;
 
   /**
    * Optional property that defines the selection options for a component.
@@ -58,6 +63,13 @@ export class SyncGridsComponent implements AfterViewInit {
       this.pageSettings = { pageSize: 15 };
     });
     this.getDataRows();
+    console.log(this.value);
+    this.valueChange.subscribe((res) => {
+      console.log(res);
+    });
+    this.FormioEvent.subscribe((res) => {
+      console.log(res);
+    });
   }
 
   ngonInit(): void {

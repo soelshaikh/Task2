@@ -106,13 +106,24 @@ function createCustomSyncGridComponent() {
     }
 
     // Get the value of the component from the dom elements.
-    override getValue() {}
+    // override getValue() {}
 
     /**
      * Set the value of the component into the dom elements.
      * @returns {boolean}
      * */
-    override setValue(value: any, flags: any): boolean {
+    // override setValue(value: any, flags: any): boolean {
+    //   console.log(value);
+    //   return super.setValue(value, flags);
+    // }
+
+    override getValue() {
+      return super.getValue();
+    }
+
+    override setValue(value, flags = {}) {
+      console.log('new');
+      value = this.component;
       console.log(value);
       return super.setValue(value, flags);
     }

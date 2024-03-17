@@ -1,6 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { Formio, FormioForm } from '@formio/angular';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import {
+  Formio,
+  FormioComponent,
+  FormioForm,
+  FormioUtils,
+} from '@formio/angular';
+import { ApiService } from '../../Services/Api.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-renderer',
@@ -10,13 +17,14 @@ import { Formio, FormioForm } from '@formio/angular';
   styleUrl: './renderer.component.css',
 })
 export class RendererComponent implements OnInit {
+  @ViewChild(FormioComponent) formioComponent: FormioComponent;
   public formTemplates!: FormioForm[]; // Array containing form templates retrieved from localstorage.
   public selectedTemplate!: any; // The selected template for rendering.
   public submitedTemplate!: {}; // The submitted template data.
   public isTemplateSelected: boolean = false; // A boolean flag indicating whether a template is selected. Default value is false.
   public isDataSubmited: boolean = false; //A boolean flag indicating whether data has been submitted. Default value is false.
-  form: any;
-
+  form: Formio;
+  apiService: ApiService = inject(ApiService);
   /**
    * Initializes the component.
    * - Removes Syncfusion premium dialog after 2 seconds to prevent UI interference.
@@ -61,18 +69,14 @@ export class RendererComponent implements OnInit {
         {
           sanitize: true,
           sanitizeConfig: {
-            allowedTags: ['sync-grid-new'], // Allowed tags for sanitization
-            addTags: ['sync-grid-new'], // Additional tags to allow
+            allowedTags: ['sync-grid-new', 'sync-grids-old'], // Allowed tags for sanitization
+            addTags: ['sync-grid-new', 'sync-grids-old'], // Additional tags to allow
           },
         }
-      ).then((form) => {
-        form.on('submit', function () {
-          console.log(form);
-          console.log(form.submission.data);
-          this.isDataSubmited = true;
-          // Store the submitted form data
-          this.submitedTemplate = form.submission.data;
-          
+      ).then((form: any) => {
+        form.on('submit', (submission: any) => {
+          console.log(submission);
+          this.submitedTemplate = JSON.stringify(submission.data, null, 4);
         });
       });
     }
@@ -91,5 +95,13 @@ export class RendererComponent implements OnInit {
 
     // Store the submitted form data
     this.submitedTemplate = formJson.data;
+  }
+
+  onReady() {
+    console.log('ready');
+
+    const yourCustomComp =
+      this.formioComponent.formio.getComponent('syncgridsold');
+    console.log(yourCustomComp); // this is the instance of your custom component.
   }
 }

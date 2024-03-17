@@ -1,14 +1,15 @@
 import {
   Component,
   ElementRef,
-  Injector,
   OnInit,
   ViewChild,
+  inject,
 } from '@angular/core';
-import { FormioForm, FormioModule } from '@formio/angular';
+import { FormioForm, FormioModule, FormioUtils } from '@formio/angular';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../Services/Api.service';
 
 @Component({
   selector: 'app-builder',
@@ -22,6 +23,7 @@ export class BuilderComponent implements OnInit {
   @ViewChild('json', { static: true }) jsonElement?: ElementRef; // Reference to the JSON element in the template.
   form: any; //The form object.
   option: any; //The options for the form.
+  public apiService: ApiService = inject(ApiService);
 
   /**
    * Initializes the form object with an empty title and an empty array of components.
@@ -29,13 +31,16 @@ export class BuilderComponent implements OnInit {
    */
   constructor() {
     // Initialize the form with an empty title and an empty array of components
-    this.form = { title: this.ScreenTitleInput, components: [] };
+    this.form = {
+      title: this.ScreenTitleInput,
+      components: [],
+    };
 
     // Initialize the options for the form with sanitization configurations and builder settings
     this.option = {
       sanitizeConfig: {
-        allowedTags: ['', 'sync-grid-new'], // Specify allowed tags for sanitization
-        addTags: ['', 'sync-grid-new'], // Specify additional tags to add during sanitization
+        allowedTags: ['', 'sync-grid-new', 'sync-grids-old'], // Specify allowed tags for sanitization
+        addTags: ['', 'sync-grid-new', 'sync-grids-old'], // Specify additional tags to add during sanitization
       },
       builder: {
         custom: {
@@ -50,6 +55,11 @@ export class BuilderComponent implements OnInit {
     };
   }
 
+  ngAfterViewChecked(): void {
+    //Called after every check of the component's view. Applies to components only.
+    //Add 'implements AfterViewChecked' to the class.
+    // this.apiService.urlEmitter.next();
+  }
   ngOnInit() {
     //Removing Syncfusion premium dialog after 2 seconds
     setTimeout(() => {
@@ -68,9 +78,10 @@ export class BuilderComponent implements OnInit {
    * @param event The event object containing information about the form change.
    */
   onChange(event: any) {
+    // console.log(event);
     if (
       event.type === 'updateComponent' &&
-      event.component.type === 'syncgrid'
+      event.component.type === 'syncgridsold'
     ) {
       // Remove elements with specific background color
       document
@@ -86,7 +97,10 @@ export class BuilderComponent implements OnInit {
           e.remove();
         });
     }
+
     // Clear the JSON element and display the updated JSON representation of the form
+
+    this.apiService.urlEmitter.next(event.form.components.ApiUrl);
     this.jsonElement.nativeElement.innerHTML = '';
     this.jsonElement.nativeElement.appendChild(
       document.createTextNode(JSON.stringify(event.form, null, 4))
@@ -102,6 +116,8 @@ export class BuilderComponent implements OnInit {
    * - Clears the screen title input and displays an alert confirming the submission.
    */
   onSubmit() {
+    // console.log(this.form.components);
+
     // Update the form object with the current screen title and components
     this.form = {
       title: this.ScreenTitleInput,
