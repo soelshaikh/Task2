@@ -76,32 +76,10 @@ export class RendererComponent implements OnInit {
       ).then((form: any) => {
         form.on('submit', (submission: any) => {
           console.log(submission);
-          this.submitedTemplate = JSON.stringify(submission.data, null, 4);
+          this.isDataSubmited = true;
+          this.submitedTemplate = submission.data;
         });
       });
     }
-  }
-
-  /**
-   * Handles form submission.
-   * - Sets the isDataSubmited flag to true.
-   * - Stores the submitted form data.
-   * @param formJson The JSON object containing the submitted form data.
-   */
-  onSubmitForm(formJson: any) {
-    // Set flag indicating data submission
-    console.log(formJson.data);
-    this.isDataSubmited = true;
-
-    // Store the submitted form data
-    this.submitedTemplate = formJson.data;
-  }
-
-  onReady() {
-    console.log('ready');
-
-    const yourCustomComp =
-      this.formioComponent.formio.getComponent('syncgridsold');
-    console.log(yourCustomComp); // this is the instance of your custom component.
   }
 }

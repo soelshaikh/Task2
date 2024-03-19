@@ -20,7 +20,8 @@ let editForm = () => {
         key: 'ApiUrl',
         label: 'Api Url',
         placeholder: 'Enter Api Url',
-        validate: { required: true },
+        // defaultValue: '',
+        // validate: { required: true },
       },
       {
         weight: 140,
@@ -29,7 +30,14 @@ let editForm = () => {
         key: 'ApiId',
         label: 'Api Id',
         placeholder: 'Enter Api Id',
-        validate: { required: true },
+      },
+      {
+        weight: 140,
+        type: 'textfield',
+        input: true,
+        key: 'GridKey',
+        label: 'GridKey',
+        placeholder: 'Enter Grid Key',
       },
     ],
     label: 'Setting', // Label for the custom section

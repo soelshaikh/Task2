@@ -5,6 +5,7 @@ import {
   DoCheck,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
   ViewChild,
   inject,
@@ -34,7 +35,7 @@ import { ApiService } from '../../../Services/Api.service';
   templateUrl: './sync-grids-old.component.html',
 })
 export class SyncGridsComponentOld
-  implements AfterViewInit, FormioCustomComponent<object>
+  implements AfterViewInit, OnChanges, FormioCustomComponent<object>
 {
   public dataSource!: object;
   public client: HttpClient = inject(HttpClient);
@@ -45,96 +46,31 @@ export class SyncGridsComponentOld
     mode: 'Row',
     type: 'Single',
   };
-  //@Input() value: object;
   @Output() valueChange = new EventEmitter<object>();
-  @Output() FormioEvent = new EventEmitter<FormioEvent>();
   @Input() disabled!: boolean;
   @ViewChild('grid', { static: true }) grid: GridComponent;
-
-  ApiData: any;
   http: HttpClient = inject(HttpClient);
-  ApiIdArray: any = [];
-  UrlStored: any = '';
-  _value: any;
-  gridInstance: any = {};
-  dataSrc = [];
+  // value: any = {};
 
   constructor() {
-    console.log('constructor');
     this.pageSettings = { pageSize: 15 };
   }
   @Input()
-  public set value(v: any) {
-    console.log('set value');
-    if (v && v != null) {
-      this._value = v;
-      // console.log(this.gridInstance);
-      if (this.gridInstance !== this._value) {
-        this.gridInstance = this._value;
-      }
-      // console.log(this.gridInstance);
-      // const ApiData = {
-      //   ApiId: this.gridInstance.ApiId,
-      //   ApiUrl: this.gridInstance.ApiUrl,
-      // };
-      // this.apiService.get(ApiData);
-    }
-  }
-  // public get value(): any {
-  //   let abc = JSON.stringify(this.gridInstance);
-  //   return JSON.parse(abc);
-  // }
+  value: any;
+
   getApiCall() {
-    if (
-      this.gridInstance?.ApiId != undefined &&
-      this.gridInstance?.ApiUrl != undefined
-    ) {
-      const ApiData = {
-        ApiId: this.gridInstance?.ApiId,
-        ApiUrl: this.gridInstance?.ApiUrl,
-        // GridId: this.gridInstance.id,
-      };
-      // console.log(ApiData);
-
-      this.apiService.get(ApiData);
-    }
-  }
-  ngOnInit(): void {
-    this.apiService.urlEmitter.subscribe((resData: any) => {
-      // console.log(resData.res[resData.UrlKey]);
-      // this.dataSource = resData.res[resData.UrlKey];
-      if (!Object.hasOwn(this.dataSrc, this.gridInstance.id)) {
-        // Object.defineProperty(this.dataSrc,this.gridInstance.id,);
-        // this.dataSource = {
-        //   key: this.gridInstance.id,
-        //   ds: resData.res[resData.UrlKey],
-        // };
-        console.log(this.gridInstance.id);
-
-        this.dataSrc.push({
-          key: this.gridInstance.id,
-          val: resData.res[resData.UrlKey],
-        });
-        // this.dataSource['datasrc']=resData.res[resData.UrlKey];
-        console.log(this.dataSrc);
-        this.SetDataToHtml();
-        // console.log(this.dataSource[this.gridInstance.id]);
-      }
+    this.apiService.get(this.value?.ApiUrl).subscribe((res) => {
+      // console.log(res);
+      this.dataSource = res[this.value?.ApiId];
     });
   }
-  SetDataToHtml() {
-    console.log('abcd');
 
-    this.dataSrc.forEach((data) => {
-      if (data.key === this.gridInstance.id) {
-        this.dataSource = data.val;
-      }
-    });
-  }
   ngOnChanges(): void {
-    //  console.log(this.value);
-    console.log('NGchanges');
-    this.getApiCall();
+    console.log(this.value);
+    // console.log(this.);
+    if (this.value?.ApiUrl && this.value?.ApiId) {
+      this.getApiCall();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -147,26 +83,11 @@ export class SyncGridsComponentOld
         e.remove();
       });
     }, 200);
-
-    if (this.grid) {
-      setTimeout(() => {
-        this.getDataRows();
-      }, 2000);
-    }
   }
 
   rowSelected(args: RowSelectEventArgs): void {
-    this.Record = args.data;
-    console.log(this.Record);
-
-    alert(`Order ID : ${this?.Record['id']}`);
-    this.value = this.Record;
-    this.valueChange.emit(this.Record);
-  }
-
-  getDataRows(): any {
-    if (this.grid) {
-      // console.log(this.grid.dataSource);
-    }
+    this.value = args.data as any;
+    // console.log(this.value);
+    this.valueChange.emit(this.value);
   }
 }

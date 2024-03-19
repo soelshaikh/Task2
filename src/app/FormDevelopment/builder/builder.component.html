@@ -1,17 +1,56 @@
-<h1 style="width: 70vw"></h1>
 <div class="container">
-  <input
-    type="text"
-    placeholder="Enter Screen title"
-    class="input-field"
-    [(ngModel)]="ScreenTitleInput"
-  />
-  <button class="button" (click)="onSubmit()">Save Screen</button>
-</div>
-<form-builder [form]="form" [options]="option" (change)="onChange($event)"></form-builder>
+  <div class="text-center header">
+    <h1>Form Builder</h1>
+  </div>
 
-<hr />
-<h3 class="text-center text-muted">As JSON Schema</h3>
-<div class="well jsonviewer" style="margin-left: 45px">
-  <pre id="json"><code class="language-json" #json></code></pre>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div class="input-group mb-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="enter form title"
+          aria-label="title"
+          aria-describedby="basic-addon2"
+          name="Title"
+          [(ngModel)]="form.title"
+        />
+        <button
+          type="button"
+          class="btn btn-primary"
+          style="width: 10%; margin-left: 10px"
+          (click)="onSaveForm()"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div>
+    <div style="display: flex">
+      <select
+        class="form-control form-select-lg mb-3"
+        name="FormTitle"
+        (change)="renderTemplate($event)"
+      >
+        <option value="-1" [selected]="this.selectedFormIndex === -1">
+          select template
+        </option>
+        <option
+          *ngFor="let form of formTemplates; let i = index"
+          [value]="i"
+          [selected]="this.selectedFormIndex === i"
+        >
+          {{ form.title }}
+        </option>
+      </select>
+    </div>
+    <form-builder
+      [form]="form"
+      [options]="builderOption"
+      (change)="onChange($event)"
+      #builder
+    ></form-builder>
+  </div>
 </div>

@@ -191,32 +191,31 @@ export function createCustomFormioComponent(
     }
 
     get defaultValue() {
-      let defaultValue = this.emptyValue;
+      // let defaultValue = this.emptyValue;
+      // // handle falsy default value
+      // if (!isNil(this.component.defaultValue)) {
+      //   defaultValue = this.component.defaultValue;
+      // }
+      // if (this.component.customDefaultValue && !this.options.preview) {
+      //   defaultValue = this.evaluate(
+      //     this.component.customDefaultValue,
+      //     { value: '' },
+      //     'value'
+      //   );
+      // }
+      // return clone(defaultValue);
+      // console.log(this.data);
 
-      // handle falsy default value
-      if (!isNil(this.component.defaultValue)) {
-        defaultValue = this.component.defaultValue;
-      }
-
-      if (this.component.customDefaultValue && !this.options.preview) {
-        defaultValue = this.evaluate(
-          this.component.customDefaultValue,
-          { value: '' },
-          'value'
-        );
-      }
-      return clone(defaultValue);
+      return this.component;
     }
 
     getValue() {
-      //console.log('Get Value');
-      // console.log(this.getValue());
       return super.getValue();
     }
     setValue(value, flags = {}) {
-      //console.log('Set Value');
-      value = this.component;
-      //console.log(value);
+      // value = this.component;
+      // console.log(value);
+
       return super.setValue(value, flags);
     }
   };

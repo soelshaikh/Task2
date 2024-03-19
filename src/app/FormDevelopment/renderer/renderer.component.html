@@ -25,31 +25,30 @@
     <div class="col">
       <div id="formio"></div>
     </div>
+  </div>
+  <div class="col jsonScreen">
+    <ng-container
+      *ngIf="isTemplateSelected; then selectedJsonRef; else emptyJsonRef"
+    ></ng-container>
 
-    <div class="col jsonScreen">
-      <ng-container
-        *ngIf="isTemplateSelected; then selectedJsonRef; else emptyJsonRef"
-      ></ng-container>
+    <ng-template #emptyJsonRef>
+      <div>JSON not available!</div>
+    </ng-template>
 
-      <ng-template #emptyJsonRef>
-        <div>JSON not available!</div>
-      </ng-template>
-
-      <ng-template #selectedJsonRef>
-        <div>
-          <div class="text-center">
-            <h4>{{ isDataSubmited ? "Data JSON" : "Template JSON" }}</h4>
-          </div>
-          <div class="input-group mb-3 mt-3">
-            <pre>
-                            {{
-                (isDataSubmited ? submitedTemplate : selectedTemplate) | json
-              }}
-                        </pre
-            >
-          </div>
+    <ng-template #selectedJsonRef>
+      <div>
+        <div class="text-center">
+          <h4>{{ isDataSubmited ? "Data JSON" : "Template JSON" }}</h4>
         </div>
-      </ng-template>
-    </div>
+        <div class="input-group mb-3 mt-3">
+          <pre>
+                          {{
+              (isDataSubmited ? submitedTemplate : selectedTemplate) | json
+            }}
+                      </pre
+          >
+        </div>
+      </div>
+    </ng-template>
   </div>
 </div>
