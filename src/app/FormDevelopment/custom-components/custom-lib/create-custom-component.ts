@@ -190,32 +190,30 @@ export function createCustomFormioComponent(
       );
     }
 
+    /**
+     * Retrieves the default value of the form control.
+     * This method returns the component associated with the form control.
+     * @returns The default value of the form control.
+     */
     get defaultValue() {
-      // let defaultValue = this.emptyValue;
-      // // handle falsy default value
-      // if (!isNil(this.component.defaultValue)) {
-      //   defaultValue = this.component.defaultValue;
-      // }
-      // if (this.component.customDefaultValue && !this.options.preview) {
-      //   defaultValue = this.evaluate(
-      //     this.component.customDefaultValue,
-      //     { value: '' },
-      //     'value'
-      //   );
-      // }
-      // return clone(defaultValue);
-      // console.log(this.data);
-
       return this.component;
     }
 
+    /**
+     * Retrieves the current value of the form control.
+     * @returns The current value of the form control.
+     */
     getValue() {
       return super.getValue();
     }
-    setValue(value, flags = {}) {
-      // value = this.component;
-      // console.log(value);
 
+    /**
+     * Sets the value of the form control.
+     * @param value The value to set.
+     * @param flags Flags that control the behavior of the value setting.
+     * @returns The result of setting the value.
+     */
+    setValue(value, flags = {}) {
       return super.setValue(value, flags);
     }
   };
