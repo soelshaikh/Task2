@@ -6,6 +6,7 @@ import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
 import { registerSyncGridNewComponent } from './FormDevelopment/custom-components/sync-grids-new/sync-grids-new.formio';
 import { registerSyncGridOldComponent } from './FormDevelopment/custom-components/sync-grids-old/sync-grids-old.formio';
 import { ApiService } from './Services/Api.service';
+import { registerSyncGridTreeComponent } from './FormDevelopment/custom-components/sync-tree-grid/sync-tree-grid.formio';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +28,7 @@ export class AppComponent implements OnInit {
     // Registers the SyncGridNewComponent using the provided Injector.
     registerSyncGridNewComponent(injector);
     registerSyncGridOldComponent(injector);
+    registerSyncGridTreeComponent(injector);
   }
 
   ngOnInit(): void {

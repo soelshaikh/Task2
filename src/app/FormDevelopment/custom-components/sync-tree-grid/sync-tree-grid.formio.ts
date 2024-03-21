@@ -1,7 +1,7 @@
 import { Injector } from '@angular/core';
-import { FormioCustomComponentInfo } from '../custom-lib/elements.common';
 import { registerCustomFormioComponent } from '../custom-lib/register-custom-component';
-import { SyncGridsComponentOld } from './sync-grids-old.component';
+import { FormioCustomComponentInfo } from '../custom-lib/elements.common';
+import { SyncTreeGridComponent } from './sync-tree-grid.component';
 import { Components } from 'formiojs';
 
 let editForm = () => {
@@ -20,8 +20,6 @@ let editForm = () => {
         key: 'ApiUrl',
         label: 'Api Url',
         placeholder: 'Enter Api Url',
-        // defaultValue: '',
-        // validate: { required: true },
       },
       {
         weight: 140,
@@ -38,18 +36,17 @@ let editForm = () => {
   return listComp;
 };
 const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
-  type: 'syncgridsold',
-  selector: 'sync-grids-old',
-  title: 'Sync Grids Old',
+  type: 'synctreegrid',
+  selector: 'sync-tree-grid',
+  title: 'Sync Tree Grid',
   group: 'custom',
-  icon: 'table',
+  icon: 'flag',
   editForm: editForm,
 };
-
-export function registerSyncGridOldComponent(injector: Injector) {
+export function registerSyncGridTreeComponent(injector: Injector) {
   registerCustomFormioComponent(
     COMPONENT_OPTIONS,
-    SyncGridsComponentOld,
+    SyncTreeGridComponent,
     injector
   );
 }

@@ -2,40 +2,95 @@ import { HttpClient } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
-  DoCheck,
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
   ViewChild,
   inject,
 } from '@angular/core';
 import {
+  AdaptiveDialogEventArgs,
+  BatchAddArgs,
+  BatchCancelArgs,
+  BatchDeleteArgs,
+  BeforeAutoFillEventArgs,
+  BeforeBatchAddArgs,
+  BeforeBatchDeleteArgs,
+  BeforeBatchSaveArgs,
+  BeforeCopyEventArgs,
+  BeforeDataBoundArgs,
+  BeforePasteEventArgs,
+  BeginEditArgs,
+  CellDeselectEventArgs,
+  ColumnChooserEventArgs,
+  ColumnChooserService,
+  ColumnDragEventArgs,
+  ColumnMenuClickEventArgs,
+  ColumnMenuOpenEventArgs,
+  ColumnMenuService,
+  ColumnSelectEventArgs,
+  ColumnSelectingEventArgs,
+  DataSourceChangedEventArgs,
+  DataStateChangeEventArgs,
+  ExcelExportService,
+  FailureEventArgs,
   FilterService,
+  FilterSettingsModel,
   GridComponent,
   GridModule,
   GroupService,
+  GroupSettingsModel,
+  KeyboardEventArgs,
+  PageEventArgs,
   PageService,
+  PdfExportService,
+  PrintEventArgs,
+  QueryCellInfoEventArgs,
+  RecordClickEventArgs,
+  RecordDoubleClickEventArgs,
+  ReorderService,
+  ResizeArgs,
+  ResizeService,
+  RowDataBoundEventArgs,
+  RowDeselectEventArgs,
+  RowDeselectingEventArgs,
+  RowDragEventArgs,
   RowSelectEventArgs,
+  RowSelectingEventArgs,
   SelectionSettingsModel,
   SortService,
+  ToolbarService,
 } from '@syncfusion/ej2-angular-grids';
-import {
-  FormioCustomComponent,
-  FormioEvent,
-} from '../custom-lib/elements.common';
+import { FormioCustomComponent } from '../custom-lib/elements.common';
 import { PageSettingsModel } from '@syncfusion/ej2-angular-grids';
 import { ApiService } from '../../../Services/Api.service';
+import { ClickEventArgs } from '@syncfusion/ej2-angular-navigations';
 
 @Component({
   selector: 'sync-grids-old',
   standalone: true,
   imports: [GridModule],
-  providers: [PageService, SortService, FilterService, GroupService],
+  providers: [
+    PageService,
+    SortService,
+    FilterService,
+    GroupService,
+    ReorderService,
+    ResizeService,
+    ColumnMenuService,
+    ToolbarService,
+    ColumnChooserService,
+    PageService,
+    PdfExportService,
+    ExcelExportService,
+  ],
+
   templateUrl: './sync-grids-old.component.html',
 })
 export class SyncGridsComponentOld
-  implements AfterViewInit, OnChanges, FormioCustomComponent<object>
+  implements AfterViewInit, OnChanges, OnInit, FormioCustomComponent<object>
 {
   public dataSource!: object;
   public client: HttpClient = inject(HttpClient);
@@ -50,13 +105,42 @@ export class SyncGridsComponentOld
   @Input() disabled!: boolean;
   @ViewChild('grid', { static: true }) grid: GridComponent;
   http: HttpClient = inject(HttpClient);
-  // value: any = {};
+  public groupOptions: GroupSettingsModel;
+  public filterSettings: FilterSettingsModel;
+  public toolbar: string[];
+  public state?: GridComponent;
+  public message?: string;
+  stateLoaded = false;
 
   constructor() {
-    this.pageSettings = { pageSize: 15 };
+    this.pageSettings = { pageSize: 10, pageCount: 3 };
   }
   @Input()
   value: any;
+
+  ngOnInit(): void {
+    this.groupOptions = { showGroupedColumn: true };
+    this.filterSettings = { type: 'CheckBox' };
+    this.toolbar = ['ColumnChooser', 'Search', 'PdfExport', 'ExcelExport'];
+  }
+  loadGridState() {
+    console.log('this.grid as GridComponent', this.grid as GridComponent);
+
+    let value: string = localStorage.getItem('gridData') as string;
+    this.state = JSON.parse(value);
+    if (this.state) {
+      (this.grid as GridComponent).setProperties(this.state);
+      this.message = 'Previous grid state restored.';
+    } else {
+      this.message = 'No saved state found.';
+    }
+  }
+
+  save() {
+    var persistData = (this.grid as GridComponent).getPersistData(); // Grid persistData
+    localStorage.setItem('gridData', persistData);
+    this.message = 'Grid state saved. !!!';
+  }
 
   /**
    * Performs an API call based on provided URL and ID in 'value' or 'gridComponent'.
@@ -104,6 +188,241 @@ export class SyncGridsComponentOld
     }, 200);
   }
 
+  // Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
+  actionBegin(args: PageEventArgs) {
+    this.message = '';
+    console.log('actionBegin :', args.requestType);
+  }
+
+  // Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.
+  actionComplete(args: PageEventArgs) {
+    console.log('actionComplete :', args);
+    if (args.requestType == 'refresh') {
+      if (!this.stateLoaded) {
+        this.loadGridState();
+        this.stateLoaded = true; // Set the flag to true after loading the state
+      }
+    }
+  }
+
+  // Triggers when any Grid action failed to achieve the desired results.
+  actionFailure(args: FailureEventArgs) {
+    console.log('actionComplete :', args);
+  }
+
+  // Triggers when records are added in batch mode.
+  batchAdd(args: BatchAddArgs) {
+    console.log('batchAdd :', args);
+  }
+
+  // Triggers when cancel the batch edit changes batch mode.
+  batchCancel(args: BatchCancelArgs) {
+    console.log('batchCancel :', args);
+  }
+  // Triggers when records are deleted in batch mode.
+  batchDelete(args: BatchDeleteArgs) {
+    console.log('batchDelete :', args);
+  }
+
+  // Triggers before Grid autoFill action.
+  beforeAutoFill(args: BeforeAutoFillEventArgs) {
+    console.log('beforeAutoFill :', args);
+  }
+
+  // Triggers before records are added in batch mode.
+  beforeBatchAdd(args: BeforeBatchAddArgs) {
+    console.log('beforeBatchAdd :', args);
+  }
+
+  // Triggers before records are deleted in batch mode.
+  beforeBatchDelete(args: BeforeBatchDeleteArgs) {
+    console.log('beforeBatchDelete :', args);
+  }
+
+  // Triggers before records are saved in batch mode.
+  beforeBatchSave(args: BeforeBatchSaveArgs) {
+    console.log('beforeBatchSave :', args);
+  }
+
+  // Triggers before Grid copy action.
+  beforeCopy(args: BeforeCopyEventArgs) {
+    console.log('beforeCopy :', args);
+  }
+
+  // Triggers before data is bound to Grid.
+  beforeDataBound(args: BeforeDataBoundArgs) {
+    console.log('beforeDataBound :', args);
+  }
+
+  // Triggers before Grid data is exported to Excel file.
+  beforeExcelExport(args: Object) {
+    console.log('beforeExcelExport :', args);
+  }
+
+  // Triggers before adaptive filter and sort dialogs open.
+  beforeOpenAdaptiveDialog(args: AdaptiveDialogEventArgs) {
+    console.log('beforeOpenAdaptiveDialog :', args);
+  }
+
+  // Triggers before the columnChooser open.
+  beforeOpenColumnChooser(args: ColumnChooserEventArgs) {
+    console.log('beforeOpenColumnChooser :', args);
+  }
+
+  // Triggers before Grid paste action.
+  beforePaste(args: BeforePasteEventArgs) {
+    console.log('beforePaste :', args);
+  }
+
+  // Triggers before Grid data is exported to PDF document.
+  beforePdfExport(args: Object) {
+    console.log('beforePdfExport :', args);
+  }
+
+  // Triggers before the print action starts.
+  beforePrint(args: PrintEventArgs) {
+    console.log('beforePrint :', args);
+  }
+
+  // Triggers before the record is to be edit.
+  beginEdit(args: BeginEditArgs) {
+    console.log('beginEdit :', args);
+  }
+  // Triggers when a particular selected cell is deselected.
+  cellDeselected(args: CellDeselectEventArgs) {
+    console.log('cellDeselected :', args);
+  }
+
+  // Triggers when column header element is dragged (moved) continuously.
+  columnDrag(args: ColumnDragEventArgs) {
+    console.log('columnDrag :', args);
+  }
+
+  // Triggers when a column header element is dropped on the target column.
+  columnDrop(args: ColumnDragEventArgs) {
+    console.log('columnDrop :', args);
+  }
+
+  // Triggers when column header element drag (move) starts.
+  columnDragStart(args: ColumnDragEventArgs) {
+    console.log('columnDragStart :', args);
+  }
+
+  // Triggers when click on column menu.
+  columnMenuClick(args: ColumnMenuClickEventArgs) {
+    console.log('columnMenuClick :', args);
+  }
+
+  // Triggers before column menu opens.
+  columnMenuOpen(args: ColumnMenuOpenEventArgs) {
+    console.log('columnMenuOpen :', args);
+  }
+
+  // Triggers before column selection occurs.
+  columnSelecting(args: ColumnSelectingEventArgs) {
+    console.log('columnSelecting :', args);
+  }
+
+  // Triggers after a column is selected.
+  columnSelected(args: ColumnSelectEventArgs) {
+    console.log('columnSelected :', args);
+  }
+
+  // Triggers when the component is created.
+  created(event: Object) {
+    console.log('created :', event);
+  }
+
+  /**
+   * Triggers when the grid data is added, deleted and updated.
+   * Invoke the done method from the argument to start render after edit operation.
+   */
+  dataSourceChange(args: DataSourceChangedEventArgs) {
+    console.log('dataSourceChange :', args);
+  }
+
+  /**
+   * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.
+   * In this event, the current view data and total record count should be assigned to the dataSource based on the action performed.
+   */
+  dataStateChange(args: DataStateChangeEventArgs) {
+    console.log('dataStateChange :', args);
+  }
+
+  // Triggers when data source is populated in the Grid.
+  dataBound(event: Object) {
+    console.log('dataBound :', event);
+  }
+
+  // Triggers when the component is destroyed.
+  destroyed(event: Object) {
+    console.log('destroyed :', event);
+  }
+
+  // Triggers when record is double clicked.
+  recordDoubleClick(args: RecordDoubleClickEventArgs) {
+    console.log('recordDoubleClick :', args);
+  }
+
+  // Triggers when record is clicked.
+  recordClick(args: RecordClickEventArgs) {
+    console.log('recordClick :', args);
+  }
+
+  /** Triggered every time a request is made to access cell information, element, or data.
+   * This will be triggered before the cell element is appended to the Grid element.
+   */
+  queryCellInfo(args: QueryCellInfoEventArgs) {
+    // console.log('queryCellInfo :', args);
+  }
+
+  // Triggers when any keyboard keys are pressed inside the grid.
+  keyPressed(args: KeyboardEventArgs) {
+    console.log('KeyPressed :', args);
+  }
+
+  // Triggers on column resizing.
+  resizing(args: ResizeArgs) {
+    console.log('Resize :', args);
+  }
+
+  // Triggers when column resize starts.
+  resizeStart(args: ResizeArgs) {
+    console.log('resizeStart :', args);
+  }
+
+  // Triggers when column resize ends.
+  resizeStop(args: ResizeArgs) {
+    console.log('resizeStop :', args);
+  }
+
+  /** Triggered every time a request is made to access row information, element, or data.
+   * This will be triggered before the row element is appended to the Grid element.
+   */
+  rowDataBound(args: RowDataBoundEventArgs) {
+    // console.log('rowDataBound :', args);
+  }
+
+  // Triggers when a selected row is deselected.
+  rowDeselected(args: RowDeselectEventArgs) {
+    console.log('rowDeselected :', args);
+  }
+
+  // Triggers before deselecting the selected row.
+  rowDeselecting(args: RowDeselectingEventArgs) {
+    console.log('rowDeselecting', args);
+  }
+
+  // Triggers when row elements are dropped on the target row.
+  rowDrop(args: RowDragEventArgs) {
+    console.log('rowDrop :', args);
+  }
+
+  // Triggers before row selection occurs.
+  rowSelecting(args: RowSelectingEventArgs) {
+    console.log('rowSelecting :', args);
+  }
+
   /**
    * Handles the selection of rows in a grid component.
    * Updates the 'value' property to contain the grid instance and the selected row's data.
@@ -111,6 +430,7 @@ export class SyncGridsComponentOld
    * @param args The event arguments containing information about the selected row.
    */
   rowSelected(args: RowSelectEventArgs): void {
+    console.log('rowSelected :', args);
     // Create a 'gridInstance' object with the 'gridComponent' and selected row's data
     const gridInstance = {
       gridComponent:
@@ -121,6 +441,22 @@ export class SyncGridsComponentOld
     this.value = gridInstance;
     // Emit the updated 'value' to notify external components of the change
     this.valueChange.emit(this.value);
+  }
+
+  toolbarClick(args: ClickEventArgs): void {
+    console.log(args.item.id);
+
+    if (args.item.id === 'grid_529239938_0_pdfexport') {
+      // 'Grid_pdfexport' -> Grid component id + _ + toolbar item name
+      (this.grid as GridComponent).pdfExport();
+    }
+    if (args.item.id === 'grid_529239938_0_excelexport') {
+      // 'Grid_excelexport' -> Grid component id + _ + toolbar item name
+      (this.grid as GridComponent).excelExport();
+    } else if (args.item.id === 'grid_529239938_0_csvexport') {
+      // 'Grid_csvexport' -> Grid component id + _ + toolbar item name
+      (this.grid as GridComponent).csvExport();
+    }
   }
 }
 

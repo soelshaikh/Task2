@@ -33,8 +33,8 @@ export class BuilderComponent {
     this.builderOption = {
       sanitize: true,
       sanitizeConfig: {
-        allowedTags: ['', 'sync-grids-old', 'sync-grid-new'], // Specify allowed tags for sanitization
-        addTags: ['', 'sync-grids-old', 'sync-grid-new'], // Specify additional tags to add during sanitization
+        allowedTags: ['', 'sync-grids-old', 'sync-grid-new', 'sync-tree-grid'], // Specify allowed tags for sanitization
+        addTags: ['', 'sync-grids-old', 'sync-grid-new', 'sync-tree-grid'], // Specify additional tags to add during sanitization
       },
       builder: {
         basic: {
