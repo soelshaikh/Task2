@@ -4,6 +4,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  NgIterable,
   OnChanges,
   OnInit,
   Output,
@@ -24,12 +25,14 @@ import {
   BeforePasteEventArgs,
   BeginEditArgs,
   CellDeselectEventArgs,
+  Column,
   ColumnChooserEventArgs,
   ColumnChooserService,
   ColumnDragEventArgs,
   ColumnMenuClickEventArgs,
   ColumnMenuOpenEventArgs,
   ColumnMenuService,
+  ColumnModel,
   ColumnSelectEventArgs,
   ColumnSelectingEventArgs,
   DataSourceChangedEventArgs,
@@ -67,11 +70,12 @@ import { FormioCustomComponent } from '../custom-lib/elements.common';
 import { PageSettingsModel } from '@syncfusion/ej2-angular-grids';
 import { ApiService } from '../../../Services/Api.service';
 import { ClickEventArgs } from '@syncfusion/ej2-angular-navigations';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'sync-grids-old',
   standalone: true,
-  imports: [GridModule],
+  imports: [GridModule, CommonModule],
   providers: [
     PageService,
     SortService,
@@ -97,6 +101,15 @@ export class SyncGridsComponentOld
   public pageSettings?: PageSettingsModel;
   public Record: Object;
   apiService: ApiService = inject(ApiService);
+  public groupOptions: GroupSettingsModel;
+  public filterSettings: FilterSettingsModel;
+  public toolbar: string[];
+  public state?: GridComponent;
+  public message?: string;
+  public columns?: NgIterable<ColumnModel> | null | undefined;
+  public persistedGridSettings?: object;
+  public dynamicColumns?: any;
+
   public selectionOptions?: SelectionSettingsModel = {
     mode: 'Row',
     type: 'Single',
@@ -105,29 +118,34 @@ export class SyncGridsComponentOld
   @Input() disabled!: boolean;
   @ViewChild('grid', { static: true }) grid: GridComponent;
   http: HttpClient = inject(HttpClient);
-  public groupOptions: GroupSettingsModel;
-  public filterSettings: FilterSettingsModel;
-  public toolbar: string[];
-  public state?: GridComponent;
-  public message?: string;
+
   stateLoaded = false;
 
   constructor() {
+    console.log('constru');
     this.pageSettings = { pageSize: 10, pageCount: 3 };
   }
   @Input()
   value: any;
 
   ngOnInit(): void {
+    console.log('init');
+
     this.groupOptions = { showGroupedColumn: true };
     this.filterSettings = { type: 'CheckBox' };
     this.toolbar = ['ColumnChooser', 'Search', 'PdfExport', 'ExcelExport'];
   }
-  loadGridState() {
-    console.log('this.grid as GridComponent', this.grid as GridComponent);
 
+  loadGridState() {
     let value: string = localStorage.getItem('gridData') as string;
     this.state = JSON.parse(value);
+    for (
+      let i = 0;
+      i < this.dynamicColumns.length && i < this.state.columns.length;
+      i++
+    ) {
+      this.state.columns[i]['headerText'] = this.dynamicColumns[i].headerText;
+    }
     if (this.state) {
       (this.grid as GridComponent).setProperties(this.state);
       this.message = 'Previous grid state restored.';
@@ -137,8 +155,27 @@ export class SyncGridsComponentOld
   }
 
   save() {
-    var persistData = (this.grid as GridComponent).getPersistData(); // Grid persistData
-    localStorage.setItem('gridData', persistData);
+    this.persistedGridSettings = JSON.parse(
+      (this.grid as GridComponent).getPersistData()
+    );
+    var gridColumns = Object.assign(
+      [],
+      (this.grid as GridComponent).getColumns()
+    );
+    (this.persistedGridSettings as any).columns.forEach(
+      (persistedColumn: Column) => {
+        const column = gridColumns.find(
+          (col: Column) => col.field === persistedColumn.field
+        );
+        if (column) {
+          persistedColumn.headerText = column.headerText;
+        }
+      }
+    );
+    localStorage.setItem(
+      'gridData',
+      JSON.stringify(this.persistedGridSettings)
+    );
     this.message = 'Grid state saved. !!!';
   }
 
@@ -147,10 +184,23 @@ export class SyncGridsComponentOld
    * Retrieves data from the API response and assigns it to 'dataSource'.
    */
   getApiCall(): void {
+    console.log('getApiCall');
     // Check if 'ApiUrl' and 'ApiId' are provided in 'value', and trigger API call if present
     if (this.value?.ApiUrl && this.value?.ApiId) {
       this.apiService.get(this.value.ApiUrl).subscribe((res) => {
         this.dataSource = res[this.value.ApiId];
+        const columnNames = Object.keys(this.dataSource[0]);
+        this.dynamicColumns = columnNames.map((key, index) => ({
+          field: key,
+          headerText: key === 'title'
+          ? 'Soel'
+          : key === 'description'
+          ? 'Hradik Sir'
+          :  key.charAt(0).toUpperCase() + key.slice(1),
+          visible: index <= 4,
+        }));
+
+        this.columns = this.dynamicColumns;
       });
     }
     // Check if 'gridComponent' exists and has 'ApiUrl', and trigger API call if present
@@ -167,6 +217,7 @@ export class SyncGridsComponentOld
    */
   ngOnChanges(): void {
     // Check if 'ApiUrl' and 'ApiId' are provided in 'value', and trigger API call if present
+
     if (this.value?.ApiUrl && this.value?.ApiId) {
       this.getApiCall();
     }
