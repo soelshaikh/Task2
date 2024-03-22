@@ -80,6 +80,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [GridModule, CommonModule],
   providers: [
+    EditService,
     PageService,
     SortService,
     FilterService,
@@ -92,7 +93,6 @@ import { CommonModule } from '@angular/common';
     PageService,
     PdfExportService,
     ExcelExportService,
-    EditService,
   ],
 
   templateUrl: './sync-grids-old.component.html',
@@ -100,6 +100,7 @@ import { CommonModule } from '@angular/common';
 export class SyncGridsComponentOld
   implements AfterViewInit, OnChanges, OnInit, FormioCustomComponent<object>
 {
+  public editSettings?: EditSettingsModel;
   public dataSource!: object;
   public client: HttpClient = inject(HttpClient);
   public pageSettings?: PageSettingsModel;
@@ -113,7 +114,7 @@ export class SyncGridsComponentOld
   public columns?: NgIterable<ColumnModel> | null | undefined;
   public persistedGridSettings?: object;
   public dynamicColumns?: any;
-  public editSettings?: EditSettingsModel;
+
   public selectionOptions?: SelectionSettingsModel = {
     mode: 'Row',
     type: 'Single',
@@ -220,7 +221,8 @@ export class SyncGridsComponentOld
   loadGridState() {
     console.log('load');
 
-    this.state = JSON.parse(localStorage.getItem('gridData') ?? '{}');
+    let value: string = localStorage.getItem('gridData') as string;
+    this.state = JSON.parse(value);
     if (this.state) {
       this.updateHeaderForColumns();
       (this.grid as GridComponent).setProperties(this.state);
