@@ -136,71 +136,16 @@ export class SyncGridsComponentOld
     this.toolbar = ['ColumnChooser', 'Search', 'PdfExport', 'ExcelExport'];
   }
 
-  loadGridState() {
-    let value: string = localStorage.getItem('gridData') as string;
-    this.state = JSON.parse(value);
-    for (
-      let i = 0;
-      i < this.dynamicColumns.length && i < this.state.columns.length;
-      i++
-    ) {
-      this.state.columns[i]['headerText'] = this.dynamicColumns[i].headerText;
-    }
-    if (this.state) {
-      (this.grid as GridComponent).setProperties(this.state);
-      this.message = 'Previous grid state restored.';
-    } else {
-      this.message = 'No saved state found.';
-    }
-  }
-
-  save() {
-    this.persistedGridSettings = JSON.parse(
-      (this.grid as GridComponent).getPersistData()
-    );
-    var gridColumns = Object.assign(
-      [],
-      (this.grid as GridComponent).getColumns()
-    );
-    (this.persistedGridSettings as any).columns.forEach(
-      (persistedColumn: Column) => {
-        const column = gridColumns.find(
-          (col: Column) => col.field === persistedColumn.field
-        );
-        if (column) {
-          persistedColumn.headerText = column.headerText;
-        }
-      }
-    );
-    localStorage.setItem(
-      'gridData',
-      JSON.stringify(this.persistedGridSettings)
-    );
-    this.message = 'Grid state saved. !!!';
-  }
-
   /**
    * Performs an API call based on provided URL and ID in 'value' or 'gridComponent'.
    * Retrieves data from the API response and assigns it to 'dataSource'.
    */
   getApiCall(): void {
-    console.log('getApiCall');
     // Check if 'ApiUrl' and 'ApiId' are provided in 'value', and trigger API call if present
     if (this.value?.ApiUrl && this.value?.ApiId) {
       this.apiService.get(this.value.ApiUrl).subscribe((res) => {
         this.dataSource = res[this.value.ApiId];
-        const columnNames = Object.keys(this.dataSource[0]);
-        this.dynamicColumns = columnNames.map((key, index) => ({
-          field: key,
-          headerText: key === 'title'
-          ? 'Soel'
-          : key === 'description'
-          ? 'Hradik Sir'
-          :  key.charAt(0).toUpperCase() + key.slice(1),
-          visible: index <= 4,
-        }));
-
-        this.columns = this.dynamicColumns;
+        this.createDynamicColumns();
       });
     }
     // Check if 'gridComponent' exists and has 'ApiUrl', and trigger API call if present
@@ -209,6 +154,50 @@ export class SyncGridsComponentOld
         this.dataSource = res[this.value.gridComponent.ApiId];
       });
     }
+  }
+
+  createDynamicColumns() {
+    const columnNames = Object.keys(this.dataSource[0]);
+    this.dynamicColumns = columnNames.map((key, index) => ({
+      field: key,
+      headerText:
+        key === 'title'
+          ? 'Soel'
+          : key === 'description'
+          ? 'Hardik Sir'
+          : key.charAt(0).toUpperCase() + key.slice(1),
+      visible: index <= 4,
+    }));
+    this.columns = this.dynamicColumns;
+  }
+
+  save() {
+    var persistData = (this.grid as GridComponent).getPersistData(); // Grid persistData
+    localStorage.setItem('gridData', persistData);
+    this.message = 'Grid state saved. !!!';
+  }
+
+  loadGridState() {
+    this.state = JSON.parse(localStorage.getItem('gridData') ?? '{}');
+    if (this.state) {
+      this.updateHeaderForColumns();
+      (this.grid as GridComponent).setProperties(this.state);
+      this.message = 'Previous grid state restored.';
+    } else {
+      this.message = 'No saved state found.';
+    }
+  }
+
+  updateHeaderForColumns() {
+    const minLen: number = Math.min(
+      this.dynamicColumns.length,
+      this.state.columns.length
+    );
+    this.state.columns = this.state.columns.map((col: any, index: any) => ({
+      ...col,
+      headerText:
+        index < minLen ? this.dynamicColumns[index].headerText : col.headerText,
+    }));
   }
 
   /**
