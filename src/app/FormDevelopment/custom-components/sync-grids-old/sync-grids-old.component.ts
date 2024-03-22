@@ -37,6 +37,8 @@ import {
   ColumnSelectingEventArgs,
   DataSourceChangedEventArgs,
   DataStateChangeEventArgs,
+  EditService,
+  EditSettingsModel,
   ExcelExportService,
   FailureEventArgs,
   FilterService,
@@ -45,6 +47,7 @@ import {
   GridModule,
   GroupService,
   GroupSettingsModel,
+  IEditCell,
   KeyboardEventArgs,
   PageEventArgs,
   PageService,
@@ -89,6 +92,7 @@ import { CommonModule } from '@angular/common';
     PageService,
     PdfExportService,
     ExcelExportService,
+    EditService,
   ],
 
   templateUrl: './sync-grids-old.component.html',
@@ -109,11 +113,15 @@ export class SyncGridsComponentOld
   public columns?: NgIterable<ColumnModel> | null | undefined;
   public persistedGridSettings?: object;
   public dynamicColumns?: any;
-
+  public editSettings?: EditSettingsModel;
   public selectionOptions?: SelectionSettingsModel = {
     mode: 'Row',
     type: 'Single',
   };
+  public idRules: Object = {};
+  public titleRules: Object = {};
+  public priceRules: Object = {};
+  public dropdownparams?: IEditCell;
   @Output() valueChange = new EventEmitter<object>();
   @Input() disabled!: boolean;
   @ViewChild('grid', { static: true }) grid: GridComponent;
@@ -122,7 +130,6 @@ export class SyncGridsComponentOld
   stateLoaded = false;
 
   constructor() {
-    console.log('constru');
     this.pageSettings = { pageSize: 10, pageCount: 3 };
   }
   @Input()
@@ -130,10 +137,34 @@ export class SyncGridsComponentOld
 
   ngOnInit(): void {
     console.log('init');
-
+    this.editSettings = {
+      allowEditing: true,
+      allowAdding: true,
+      allowDeleting: true,
+      mode: 'Normal',
+    };
     this.groupOptions = { showGroupedColumn: true };
     this.filterSettings = { type: 'CheckBox' };
-    this.toolbar = ['ColumnChooser', 'Search', 'PdfExport', 'ExcelExport'];
+    this.toolbar = [
+      'ColumnChooser',
+      'Search',
+      'PdfExport',
+      'ExcelExport',
+      'Add',
+      'Edit',
+      'Delete',
+      'Update',
+      'Cancel',
+    ];
+    this.idRules = { required: true, number: true };
+    this.titleRules = { required: true };
+    this.priceRules = { min: 1, max: 1000 };
+    this.dropdownparams = {
+      params: {
+        showClearButton: true,
+        popupHeight: 120,
+      },
+    };
   }
 
   /**
@@ -160,13 +191,22 @@ export class SyncGridsComponentOld
     const columnNames = Object.keys(this.dataSource[0]);
     this.dynamicColumns = columnNames.map((key, index) => ({
       field: key,
-      headerText:
-        key === 'title'
-          ? 'Soel'
-          : key === 'description'
-          ? 'Hardik Sir'
-          : key.charAt(0).toUpperCase() + key.slice(1),
+      headerText: key.charAt(0).toUpperCase() + key.slice(1),
       visible: index <= 4,
+      isPrimaryKey: key === 'id' ? true : undefined,
+      editType:
+        key === 'price'
+          ? 'numericedit'
+          : key === 'brand'
+          ? 'dropdownedit'
+          : undefined,
+      validationRules:
+        key === 'price'
+          ? 'priceRules'
+          : key === 'title'
+          ? 'titleRules'
+          : undefined,
+      edit: key === 'brand' ? this.dropdownparams : undefined,
     }));
     this.columns = this.dynamicColumns;
   }
@@ -178,6 +218,8 @@ export class SyncGridsComponentOld
   }
 
   loadGridState() {
+    console.log('load');
+
     this.state = JSON.parse(localStorage.getItem('gridData') ?? '{}');
     if (this.state) {
       this.updateHeaderForColumns();
@@ -190,8 +232,8 @@ export class SyncGridsComponentOld
 
   updateHeaderForColumns() {
     const minLen: number = Math.min(
-      this.dynamicColumns.length,
-      this.state.columns.length
+      this.dynamicColumns?.length,
+      this.state.columns?.length
     );
     this.state.columns = this.state.columns.map((col: any, index: any) => ({
       ...col,
@@ -232,6 +274,7 @@ export class SyncGridsComponentOld
   actionBegin(args: PageEventArgs) {
     this.message = '';
     console.log('actionBegin :', args.requestType);
+    (this.grid as GridComponent).editSettings.showDeleteConfirmDialog = true;
   }
 
   // Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.

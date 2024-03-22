@@ -23,10 +23,12 @@
     "@syncfusion/ej2-angular-grids": "^24.2.9",
     "@syncfusion/ej2-angular-navigations": "^25.1.35",
     "@syncfusion/ej2-angular-treegrid": "^25.1.35",
+    "@syncfusion/ej2-data": "^25.1.35",
     "bootstrap": "^5.3.3",
     "formiojs": "^4.18.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "uninstall": "^0.0.0",
     "zone.js": "~0.14.3"
   },
   "devDependencies": {
