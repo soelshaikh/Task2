@@ -35,6 +35,8 @@ import {
   ColumnModel,
   ColumnSelectEventArgs,
   ColumnSelectingEventArgs,
+  ContextMenuItem,
+  ContextMenuService,
   DataSourceChangedEventArgs,
   DataStateChangeEventArgs,
   EditService,
@@ -74,6 +76,8 @@ import { PageSettingsModel } from '@syncfusion/ej2-angular-grids';
 import { ApiService } from '../../../Services/Api.service';
 import { ClickEventArgs } from '@syncfusion/ej2-angular-navigations';
 import { CommonModule } from '@angular/common';
+import { employeeData } from './data';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'sync-grids-old',
@@ -93,13 +97,27 @@ import { CommonModule } from '@angular/common';
     PageService,
     PdfExportService,
     ExcelExportService,
+    ContextMenuService,
   ],
 
   templateUrl: './sync-grids-old.component.html',
+  styleUrls: ['sync-grids-old.component.css'],
 })
+// {
+//   public data: Object[];
+
+//   @ViewChild('grid')
+//   public grid: GridComponent;
+
+//   ngOnInit(): void {
+//       this.data = employeeData;
+//   }
+
+// }
 export class SyncGridsComponentOld
   implements AfterViewInit, OnChanges, OnInit, FormioCustomComponent<object>
 {
+  public contextMenuItems: ContextMenuItem[];
   public editSettings?: EditSettingsModel;
   public dataSource!: object;
   public client: HttpClient = inject(HttpClient);
@@ -107,8 +125,8 @@ export class SyncGridsComponentOld
   public Record: Object;
   apiService: ApiService = inject(ApiService);
   public groupOptions: GroupSettingsModel;
-  public filterSettings: FilterSettingsModel;
-  public toolbar: string[];
+  public filterSettings: Object;
+  public toolbar: Object[];
   public state?: GridComponent;
   public message?: string;
   public columns?: NgIterable<ColumnModel> | null | undefined;
@@ -127,6 +145,7 @@ export class SyncGridsComponentOld
   @Input() disabled!: boolean;
   @ViewChild('grid', { static: true }) grid: GridComponent;
   http: HttpClient = inject(HttpClient);
+  private apiSubscription: Subscription | undefined;
 
   stateLoaded = false;
 
@@ -145,7 +164,7 @@ export class SyncGridsComponentOld
       mode: 'Normal',
     };
     this.groupOptions = { showGroupedColumn: true };
-    this.filterSettings = { type: 'CheckBox' };
+    this.filterSettings = { type: 'Menu' };
     this.toolbar = [
       'ColumnChooser',
       'Search',
@@ -156,10 +175,46 @@ export class SyncGridsComponentOld
       'Delete',
       'Update',
       'Cancel',
+      {
+        prefixIcon: 'e-small-icon',
+        id: 'big',
+        align: 'Right',
+        tooltipText: 'Row-height-big',
+      },
+      {
+        prefixIcon: 'e-medium-icon',
+        id: 'medium',
+        align: 'Right',
+        tooltipText: 'Row-height-medium',
+      },
+      {
+        prefixIcon: 'e-big-icon',
+        id: 'small',
+        align: 'Right',
+        tooltipText: 'Row-height-small',
+      },
     ];
-    this.idRules = { required: true, number: true };
-    this.titleRules = { required: true };
-    this.priceRules = { min: 1, max: 1000 };
+    this.contextMenuItems = [
+      'AutoFit',
+      'AutoFitAll',
+      'SortAscending',
+      'SortDescending',
+      'Copy',
+      'Edit',
+      'Delete',
+      'Save',
+      'Cancel',
+      'PdfExport',
+      'ExcelExport',
+      'CsvExport',
+      'FirstPage',
+      'PrevPage',
+      'LastPage',
+      'NextPage',
+    ];
+    // this.idRules = { required: true, number: true };
+    // this.titleRules = { required: true };
+    // this.priceRules = { min: 1, max: 1000 };
     this.dropdownparams = {
       params: {
         showClearButton: true,
@@ -175,39 +230,58 @@ export class SyncGridsComponentOld
   getApiCall(): void {
     // Check if 'ApiUrl' and 'ApiId' are provided in 'value', and trigger API call if present
     if (this.value?.ApiUrl && this.value?.ApiId) {
-      this.apiService.get(this.value.ApiUrl).subscribe((res) => {
-        this.dataSource = res[this.value.ApiId];
-        this.createDynamicColumns();
-      });
+      this.apiSubscription = this.apiService
+        .get(this.value.ApiUrl)
+        .subscribe((res) => {
+          this.dataSource = res[this.value.ApiId];
+          this.createDynamicColumns();
+        });
     }
     // Check if 'gridComponent' exists and has 'ApiUrl', and trigger API call if present
     else if (this.value?.gridComponent?.ApiUrl) {
-      this.apiService.get(this.value.gridComponent.ApiUrl).subscribe((res) => {
-        this.dataSource = res[this.value.gridComponent.ApiId];
-      });
+      this.apiSubscription = this.apiService
+        .get(this.value.gridComponent.ApiUrl)
+        .subscribe((res) => {
+          this.dataSource = res[this.value.gridComponent.ApiId];
+          this.createDynamicColumns();
+        });
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.apiSubscription) {
+      this.apiSubscription.unsubscribe();
+    }
+  }
   createDynamicColumns() {
     const columnNames = Object.keys(this.dataSource[0]);
     this.dynamicColumns = columnNames.map((key, index) => ({
       field: key,
       headerText: key.charAt(0).toUpperCase() + key.slice(1),
       visible: index <= 4,
-      isPrimaryKey: key === 'id' ? true : undefined,
+      isPrimaryKey: key === 'OrderID' ? true : undefined,
       editType:
-        key === 'price'
+        key === 'CustomerName'
+          ? 'stringedit'
+          : key === 'Freight'
           ? 'numericedit'
-          : key === 'brand'
+          : key === 'ShipCountry'
           ? 'dropdownedit'
+          : key === 'OrderDate'
+          ? 'datepickeredit'
+          : key === 'OrderTime'
+          ? 'datetimepickeredit'
+          : key === 'Verified'
+          ? 'booleanedit'
           : undefined,
-      validationRules:
-        key === 'price'
-          ? 'priceRules'
-          : key === 'title'
-          ? 'titleRules'
-          : undefined,
-      edit: key === 'brand' ? this.dropdownparams : undefined,
+
+      // validationRules:
+      //   key === 'price'
+      //     ? this.priceRules
+      //     : key === 'title'
+      //     ? this.titleRules
+      //     : undefined,
+      edit: key === 'ShipCountry' ? this.dropdownparams : undefined,
     }));
     this.columns = this.dynamicColumns;
   }
@@ -250,6 +324,10 @@ export class SyncGridsComponentOld
    */
   ngOnChanges(): void {
     // Check if 'ApiUrl' and 'ApiId' are provided in 'value', and trigger API call if present
+
+    console.log('Sohil :', this.value);
+
+    console.log('this.value?.ApiUrl ::::::::::::', this.value?.ApiUrl);
 
     if (this.value?.ApiUrl && this.value?.ApiId) {
       this.getApiCall();
@@ -522,6 +600,7 @@ export class SyncGridsComponentOld
         'gridComponent' in this.value ? this.value.gridComponent : this.value,
       gridValue: args.data as any,
     };
+
     // Update the 'value' property with 'gridInstance'
     this.value = gridInstance;
     // Emit the updated 'value' to notify external components of the change
@@ -531,6 +610,15 @@ export class SyncGridsComponentOld
   toolbarClick(args: ClickEventArgs): void {
     console.log(args.item.id);
 
+    if (args.item.id === 'small') {
+      this.grid.rowHeight = 20;
+    }
+    if (args.item.id === 'medium') {
+      this.grid.rowHeight = 40;
+    }
+    if (args.item.id === 'big') {
+      this.grid.rowHeight = 60;
+    }
     if (args.item.id === 'grid_529239938_0_pdfexport') {
       // 'Grid_pdfexport' -> Grid component id + _ + toolbar item name
       (this.grid as GridComponent).pdfExport();
@@ -546,8 +634,9 @@ export class SyncGridsComponentOld
 }
 
 // Add this line in state configuration Data section custom logic accroding to your component Name
-// component.ApiUrl = "http://localhost/api/getState?country="+data.countryData.gridValue['Country']
+// component.ApiUrl = "http://localhost/api/getState?country="+data.countryData.gridValue['Country']  data.labelName
 // component.ApiUrl = "http://localhost/api/getCity?country="+data.countryData.gridValue['Country']+"&state="+data.stateData.gridValue['State']
 
-//Api id = Body
+// Api id = Body
+
 // and Also Pass Redraw On
