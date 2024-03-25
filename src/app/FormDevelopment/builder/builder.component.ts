@@ -1,15 +1,7 @@
-import {
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-  inject,
-} from '@angular/core';
+import { Component } from '@angular/core';
 import { FormioForm, FormioModule, FormioUtils } from '@formio/angular';
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../Services/Api.service';
 
 @Component({
   selector: 'app-builder',

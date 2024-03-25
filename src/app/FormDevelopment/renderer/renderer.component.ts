@@ -6,8 +6,6 @@ import {
   FormioForm,
   FormioUtils,
 } from '@formio/angular';
-import { ApiService } from '../../Services/Api.service';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-renderer',
@@ -24,7 +22,6 @@ export class RendererComponent implements OnInit {
   public isTemplateSelected: boolean = false; // A boolean flag indicating whether a template is selected. Default value is false.
   public isDataSubmited: boolean = false; //A boolean flag indicating whether data has been submitted. Default value is false.
   form: Formio;
-  apiService: ApiService = inject(ApiService);
   /**
    * Initializes the component.
    * - Removes Syncfusion premium dialog after 2 seconds to prevent UI interference.
